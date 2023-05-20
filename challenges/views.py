@@ -1,7 +1,6 @@
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.urls import reverse
-
 
 challenges = {
     'january': 'run',
@@ -15,37 +14,36 @@ challenges = {
     'september': 'learn PostrgreSQL',
     'october': 'learn API',
     'november': 'find a job',
-    'december': 'get on vacation',
+    'december': None,
 }
 
 
 def index(request):
-    list_items = ''
-    months = list(challenges.keys())
-
-    for month in months:
-        month_url = reverse('monthly-challenge-str', args=[month])
-        list_items += f'<li><a href=\'{month_url}\'>{month.capitalize()}</a></li>'
-
-    response_data = f'<ul>{list_items}</ul>'
-    return HttpResponse(response_data)
+    context = {
+        'months': challenges.keys(),
+    }
+    return render(request, 'challenges/index.html', context)
 
 
 def monthly_challenges(request, month):
     try:
-        message = challenges[month]
-        return HttpResponse(str(month).title() + ' challenge: ' + message)
+        challenge_text = challenges[month]
+        context = {
+            'month': month,
+            'text': challenge_text
+        }
+        return render(request, 'challenges/challenge.html', context)
 
-    except KeyError:
-        return HttpResponseNotFound('No such month')
+    except:
+        raise Http404
 
 
-def monthly_challenges_by_num(request, month):
+def num_redirect(request, month):
     months = list(challenges.keys())
     if not 0 < month <= len(months):
         return HttpResponseNotFound('No such month')
 
     redirect_month = months[month - 1]
-    redirect_url = reverse('monthly-challenge-str', args=[redirect_month])
+    redirect_url = reverse('monthly-challenge', args=[redirect_month])
 
     return HttpResponseRedirect(redirect_url)
