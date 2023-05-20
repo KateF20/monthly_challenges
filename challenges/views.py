@@ -28,14 +28,15 @@ def index(request):
 def monthly_challenges(request, month):
     try:
         challenge_text = challenges[month]
-        context = {
-            'month': month,
-            'text': challenge_text
-        }
-        return render(request, 'challenges/challenge.html', context)
 
-    except:
+    except KeyError:
         raise Http404
+
+    context = {
+        'month': month,
+        'text': challenge_text
+    }
+    return render(request, 'challenges/challenge.html', context)
 
 
 def num_redirect(request, month):
